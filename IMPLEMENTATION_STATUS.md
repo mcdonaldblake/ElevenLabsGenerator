@@ -26,9 +26,9 @@ Local mock-only browser verification passed at desktop, 390 px, and 430 px width
 | Stateless ElevenLabs API | Server-only key, strict validation, no persistence, sanitized errors | Implemented; route and provider contract tests pass |
 | Ephemeral batch scheduler | 100-row chunks, concurrency two, cancellation, no automatic retry | Implemented; concurrency, cancellation, and double-submit tests pass |
 | Client export | Individual files, ZIP, CSV/JSON/recipe manifests, iPhone share fallback | Individual and ZIP downloads pass mock browser verification; manifest, recipe, naming, collision, and mixed-recipe tests pass |
-| Security | Vercel Authentication, same-origin mutations, preview URL allowlist, no-store | Application controls pass; Vercel project and Authentication are configured; deployed-preview check pending |
+| Security | Vercel Authentication, same-origin mutations, preview URL allowlist, no-store | Application controls pass; unauthenticated preview access redirects to Vercel SSO; temporary verification bypass was revoked |
 | Mock provider | Automated tests and local checks make no paid requests | Implemented; all automated tests were non-paid |
-| Protected Vercel preview | Git deployment disabled; CLI Preview/Development secret only; no production promotion | Project created and Authentication enabled; environment secret and preview deployment not yet created |
+| Protected Vercel preview | Git deployment disabled; CLI Preview/Development secret only; no production promotion | Protected preview is READY; no environment secret is configured yet; stable production URL returns 404 |
 
 ## Automated coverage
 
@@ -42,9 +42,17 @@ The passing suite covers:
 - concurrency two, stop-before-next behavior, deterministic recipe snapshots, and rapid-click paid-request guards
 - stale preview-attempt isolation and use of the account voice ID returned by Add & use
 
+## Protected preview checkpoint
+
+The current protected preview is:
+
+<https://elevenlabs-generator-bn1vfua9k-mcdonaldblake90-7513s-projects.vercel.app>
+
+Vercel Authentication is enabled and an unauthenticated request redirects to Vercel SSO. The stable production alias returns 404, the project has no production deployment, and the temporary automation bypass used for verification was revoked. Vercel classified the project's first upload as Production despite a preview command; that keyless deployment and its public alias were immediately removed. Only the READY Preview deployment remains.
+
 ## Remaining deployment checks
 
-Before deployment, add the restricted `ELEVENLABS_API_KEY` to Preview and Development only, then rerun `pnpm check`. Confirm `vercel.json` still disables Git deployments, create the release only with `vercel deploy`, and verify the result is a Preview—not Production—deployment. Confirm Vercel Authentication blocks an unauthenticated page and API request, then sign in from the intended physical iPhone and verify the native share sheet and downloaded ZIP opening in Files.
+Add a newly rotated, restricted `ELEVENLABS_API_KEY` to Preview and Development only, then create another release with `vercel deploy`. Do not reuse the previously exposed local key. Sign in from the intended physical iPhone and verify the native share sheet and downloaded ZIP opening in Files.
 
 Deployed previews never enable the local-only mock provider. Do not send a live TTS request without explicit authorization, and do not promote the deployment to production under the current Hobby protection model.
 

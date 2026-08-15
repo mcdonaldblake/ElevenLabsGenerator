@@ -1,0 +1,38 @@
+{
+  "name": "@voice-foundry/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "OPEN_BROWSER=false tsx watch src/index.ts",
+    "build": "tsup --config tsup.config.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --root ../.. apps/server/src"
+  },
+  "dependencies": {
+    "@fastify/cors": "latest",
+    "@fastify/multipart": "latest",
+    "@fastify/static": "latest",
+    "@voice-foundry/domain": "workspace:*",
+    "@voice-foundry/export-format": "workspace:*",
+    "@voice-foundry/schemas": "workspace:*",
+    "better-sqlite3": "latest",
+    "csv-parse": "latest",
+    "dotenv": "latest",
+    "drizzle-orm": "latest",
+    "fastify": "latest",
+    "open": "latest",
+    "yazl": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "latest",
+    "@types/node": "latest",
+    "@types/yazl": "latest",
+    "tsup": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}

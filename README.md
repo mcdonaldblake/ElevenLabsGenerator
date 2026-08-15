@@ -1,153 +1,119 @@
-# Frase Uno Voice Foundry
+# ElevenLabs Generator
 
-Frase Uno Voice Foundry is a standalone, local workstation tool for turning a user-written batch of phrases into reviewed audio files that are easy to hardcode into another program.
+A small, standalone ElevenLabs workbench for finding a voice, tuning its settings, testing a phrase, generating a batch, and downloading the audio for any app or project.
 
-This adaptation intentionally removes built-in text AI. It does not write, rewrite, score, translate, categorize, or select phrases. The operator supplies the text, and every keep/discard decision remains human. Network features are limited to plain text-to-speech and explicit operator browsing, previewing, and selection from ElevenLabs' public Shared Voice Library. A mock provider is available for exercising the core workflow without an API key or paid requests.
+The interface is a single responsive page and works from an iPhone through a protected Vercel preview. It has no database, project history, server-side file storage, translation, or Frase Uno integration. Everything you type, import, or generate lives only in the current browser tab; closing or refreshing the tab clears it.
 
-The complete local workflow is implemented and covered by automated tests in mock mode. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for the exact verification record and the deliberately unrun real-provider check.
+## What it does
 
-## What the tool is for
+- Browse and filter the ElevenLabs Shared Voice Library or select one of your account voices.
+- Preview voices, copy a voice ID, or explicitly add a shared voice to your account and use the returned account voice ID.
+- Adjust the model, output format, language, seed, stability, similarity, style, speed, and speaker-boost settings.
+- Generate and listen to one test phrase before spending credits on a batch.
+- Paste one phrase per line or import UTF-8 TXT, CSV, TSV, or JSON.
+- Generate up to 100 pending clips at a time with two requests in flight.
+- Play and download clips individually, share supported files from an iPhone, or download a client-built ZIP containing audio and manifests.
 
-1. Import a large UTF-8 CSV, TSV, TXT, or JSON file containing independently authored phrases.
-2. Preserve stable phrase IDs and separate display text from optional synthesis text.
-3. Choose an existing account voice, or explicitly browse the public Shared Voice Library and add one selected voice to the account, then configure the exact profile.
-4. Generate one initial audio take per selected phrase using that profile, or use mock mode while testing the workflow.
-5. Review clips rapidly and mark each phrase as kept, discarded, or still pending.
-6. Regenerate only the phrases that need another delivery.
-7. Download an export ZIP with stable filenames, audio, metadata, checksums, and a TypeScript audio map suitable for copying into another codebase.
-
-The tool does not edit or deploy the Frase Uno application. Export is an explicit handoff: the operator downloads the ZIP, inspects it, and copies the selected assets into the destination program.
+The application never writes, rewrites, translates, categorizes, or scores text. Voice browsing is operator-directed provider metadata, not an AI recommendation feature.
 
 ## Deliberate limits
 
-- No OpenAI integration, prompt generation, semantic review, or automated phrase selection.
-- Public Shared Voice Library browsing is deliberately user-directed: search, filters, pagination, preview, and adding one explicitly selected voice are supported. There is no AI ranking, recommendation, semantic search, Voice Design, Voice Remix, similar-voice search, speech-to-speech, or voice-cloning workflow.
-- No Supabase, cloud database, cloud storage, telemetry, deployment, or multi-user collaboration.
-- No cloud account, remote hosting, or multi-user access. Normal startup listens only on `127.0.0.1`; an explicit iPhone mode adds short-lived pairing for a trusted private Wi-Fi network.
-- No automatic mutation of a downstream repository.
+- No database, Blob store, filesystem archive, background worker, persistent queue, projects, in-app user accounts, or export history.
+- No refresh recovery: the recipe, imported rows, progress, and audio blobs exist only in the open tab.
+- No automatic retry after an ambiguous provider or network failure, because retrying may spend credits twice.
+- No Voice Design, Voice Remix, cloning, similar-voice search, speech-to-speech, or automatic voice selection.
+- No production deployment on the current Hobby protection model. Use protected preview deployments only.
 
-## Requirements
+## Local development
+
+Requirements:
 
 - Node.js 22 or newer
-- pnpm 11.19 or a compatible pnpm 11 release
-- An ElevenLabs API key for real speech generation or adding a Shared Voice to an account; some ElevenLabs connections also require it for public-library browsing
-- A modern local browser
-- For iPhone access: a Mac and iPhone on the same trusted, non-isolated Wi-Fi network
+- pnpm 11
+- A modern browser
+- An ElevenLabs API key for live account voices, adding a shared voice, and real generation
 
-## Quick start
+Install and start the development server:
 
 ```bash
 pnpm install
-cp .env.example .env
+cp .env.example .env.local
 pnpm dev
 ```
 
-Open `http://127.0.0.1:5173` for the development UI. A production-style `pnpm start` serves the built app at `http://127.0.0.1:4317`.
-
-The checked-in environment example starts in mock mode:
+Open the URL printed by Next.js. Keep the live key only in `.env.local`:
 
 ```dotenv
-TTS_PROVIDER=mock
+ELEVENLABS_API_KEY=your_restricted_key
+ELEVENLABS_PROVIDER=mock
 ```
 
-Mock mode is the safest first run. It should exercise import, queue, review, and export behavior without consuming ElevenLabs credits. Mock audio is a workflow fixture, not production speech.
+Never use a `NEXT_PUBLIC_` prefix for the key. Restrict the ElevenLabs key to the minimum required Voices Read/Write and Text-to-Speech permissions.
 
-Profiles, job fingerprints, takes, and exports retain their provider provenance. After switching from mock mode to ElevenLabs, duplicate or create and lock a new profile while ElevenLabs mode is active; mock takes are never reused as paid-provider results. Mock ZIPs carry an explicit warning.
+The mock adapter is for automated tests and explicitly selected local development. Set `ELEVENLABS_PROVIDER=elevenlabs` (or remove the variable, which defaults to ElevenLabs) only when a live request is intended. Mock mode must never be silently used in a deployed preview or presented as production speech.
 
-For real text-to-speech, edit the local `.env` file:
+## Use the page
 
-```dotenv
-ELEVENLABS_API_KEY=your_local_key
-TTS_PROVIDER=elevenlabs
-```
+1. Browse or select a voice. Use **Copy voice ID** when you only need the identifier, or **Add & use** when you want a shared voice added to your ElevenLabs account and loaded into the recipe.
+2. Adjust the recipe and generate one short test phrase. Generation can consume ElevenLabs credits; replaying the resulting in-tab audio does not.
+3. Paste one phrase per line or import a supported file. Inspect invalid and duplicate rows before proceeding.
+4. Generate the next chunk. The tab must remain open while it runs. Successful clips remain available if another row fails; retry a failed row only after deciding that a second charge is acceptable.
+5. Download individual clips or the ZIP. On iPhone, use the share action when Safari supports sharing the generated file; otherwise download it to Files.
 
-Never commit `.env`. The server, not the browser, owns the API key.
+See the [operator guide](docs/operator-guide.md) for the detailed flow and [import format](docs/import-format.md) for accepted columns and JSON shapes.
 
-Shared Voice Library browsing is initiated only when you open or search that picker. Results and provider preview URLs are not written to the local database. When a server-side key is configured, catalog requests use it because ElevenLabs may reject anonymous browsing; without a key, the server still attempts public access and reports clearly if ElevenLabs requires authentication. Preview audio is fetched through the local server from a narrowly approved ElevenLabs storage path and never receives the key. Adding a selected voice and generating speech also use the server-side key; account plan restrictions still apply.
+## ZIP contents
 
-For a production-style local run:
-
-```bash
-pnpm start
-```
-
-## Use it from an iPhone
-
-Keep the Mac awake and connect the Mac and iPhone to the same trusted home or office Wi-Fi. From the repository root, run:
-
-```bash
-pnpm start:iphone
-```
-
-The terminal prints one or more private-network URLs and a pairing code. Open a printed URL in Safari on the iPhone, enter the code, and use the normal interface. The code itself is never returned to the browser, and the resulting browser session is kept in an HTTP-only cookie for up to 24 hours. Disconnecting, restarting the server, or reaching that limit requires pairing again.
-
-macOS may ask whether Node can accept incoming connections the first time; choose **Allow**. Use a normal Safari tab. If Private Browsing asks permission to reveal the phone's address to the local server, approve it. If the phone cannot connect, confirm both devices are on the same Wi-Fi, pause any VPN, and check that the Wi-Fi does not isolate clients from each other.
-
-This mode uses ordinary HTTP on the local network. Use it only on a network you trust—never public café, hotel, guest, or school Wi-Fi—and never port-forward, tunnel, reverse-proxy, or expose the printed URL to the internet. Stop the server when finished. Normal `pnpm start` returns to Mac-only loopback access. Disconnecting removes API access but cannot erase ZIPs already downloaded or content retained by Safari; delete sensitive phone downloads and website data separately.
-
-## Day-to-day workflow
-
-Start with [samples/phrases.csv](samples/phrases.csv) or [samples/phrases.txt](samples/phrases.txt), then follow the [operator guide](docs/operator-guide.md). All accepted batch formats are documented in [docs/import-format.md](docs/import-format.md).
-
-For real batches, a cost-conscious sequence is:
-
-1. Import and inspect the phrase count.
-2. Configure the exact voice ID, model, output format, language, and delivery settings.
-3. Generate a small calibration selection.
-4. If it sounds right, create one first-pass take for the remaining phrases.
-5. Keep good takes, discard unusable phrases, and regenerate only weak deliveries.
-6. Preview export validation, create a new ZIP, and integrate it manually.
-
-## Local data and security
-
-Operational state lives below `data/` by default: SQLite metadata, imported-source records, generated audio, and exports. That directory and `.env` are ignored by Git.
-
-The local workstation remains the security boundary:
-
-- Use ordinary `pnpm start` for Mac-only work; it binds to `127.0.0.1`.
-- Use `pnpm start:iphone` only when phone access is needed, and pair from a trusted private network.
-- Do not manually bind it to a public interface, port-forward it, reverse-proxy it, or put it through a tunnel.
-- Treat exports and backups as sensitive project data.
-- Store the ElevenLabs key only in `.env` or the process environment.
-- Review logs before sharing them, even though provider errors should be sanitized.
-
-See [backup and restore](docs/backup-and-restore.md) for a conservative copy procedure.
-
-## Repository layout
+The browser builds the ZIP without uploading imported files or completed batches to Vercel:
 
 ```text
-apps/
-  server/          Local Fastify API, persistence, queue, providers, exports
-  web/             Local React/Vite operator interface
-packages/
-  domain/          Stable IDs, normalization, fingerprints, shared domain rules
-  schemas/         Request and response validation
-  export-format/   Deterministic filenames, CSV, and TypeScript map generation
-data/              Local runtime state; ignored by Git
-docs/              Operator, import, backup, and architecture notes
-samples/           Safe import fixtures
+audio/0001.mp3
+audio/0002.mp3
+manifest.csv
+manifest.json
+recipe.json
 ```
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for data flow and trust boundaries.
+An imported `id` or `filename` is used for the audio filename when present. Otherwise the row receives a zero-padded sequence name. Unsafe characters are removed and collisions receive deterministic numeric suffixes.
 
-## Development checks
+## Protected Vercel preview
+
+Create or link a Vercel project for this repository, then enable **Vercel Authentication** with **Standard Protection** in the project settings. On a Hobby project, keep this application as a preview deployment; do not promote it to production because the chosen protection does not cover the stable production domain.
+
+Git-triggered deployments are disabled in `vercel.json`. This prevents a push to `main` from creating an unprotected production deployment; releases are deliberate CLI preview deployments only.
+
+Add `ELEVENLABS_API_KEY` as a sensitive Vercel environment variable scoped only to **Preview** and **Development**. Do not configure it for Production:
 
 ```bash
+pnpm dlx vercel link
+pnpm dlx vercel env add ELEVENLABS_API_KEY preview --sensitive
+pnpm dlx vercel env add ELEVENLABS_API_KEY development --sensitive
+pnpm dlx vercel deploy
+```
+
+Do not set `ELEVENLABS_PROVIDER=mock` on Preview; production builds reject that unsafe configuration. An omitted provider variable defaults to real ElevenLabs. Environment-variable changes affect new deployments, so create another preview after changing the key or provider mode.
+
+`vercel deploy` returns a new protected preview URL. Open it, complete Vercel authentication, verify the workflow, and bookmark that preview URL on the iPhone. A later deployment creates another URL; it does not update an old bookmarked preview.
+
+Safe inspection commands:
+
+```bash
+pnpm dlx vercel ls
+pnpm dlx vercel inspect <preview-url>
+pnpm dlx vercel logs <preview-url>
+```
+
+Do not run `vercel --prod`, `vercel deploy --prod`, or `vercel promote` under this protection model. Never paste API keys into a shell command, commit them to Git, or print them in logs.
+
+## Verification
+
+```bash
+pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
 ```
 
-Or run the combined check:
+All routine tests use the mock provider. A live ElevenLabs smoke test requires explicit approval and is limited to one short phrase.
 
-```bash
-pnpm check
-```
-
-Current verification results are recorded in [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md).
-
-## Recovery and support
-
-If the application is stopped during a batch, do not delete `data/`. Restart the same checkout and inspect the queue before retrying work. Do not manually edit the SQLite database or rename generated audio files; IDs, hashes, and paths are linked.
-
-For a clean test without touching real project state, make a backup and point the environment variables at separate test paths.
+Architecture and trust boundaries are documented in [ARCHITECTURE.md](ARCHITECTURE.md). The current implementation checkpoint is in [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md).

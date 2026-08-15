@@ -1,0 +1,7 @@
+.env*
+.next/
+apps/
+coverage/
+data/
+downloads/
+node_modules/

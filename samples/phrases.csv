@@ -1,9 +1,5 @@
-id,text,synthesis_text,group,category,notes
-correct-continue-001,Adelante.,,correct-continue,continue_only,Very short transition
-correct-continue-002,Eso es. Seguimos.,,correct-continue,acknowledgement_continue,Warm and brief
-correct-continue-003,Muy bien. Vamos con la siguiente.,,correct-continue,acknowledgement_continue,Neutral continuation
-correct-continue-004,"¡Muy bien, seguimos!",,correct-continue,encouragement,Quoted because the phrase contains a comma
-correct-continue-005,Perfecto. Continuemos.,,correct-continue,acknowledgement_continue,
-correct-continue-006,Así es. Adelante.,,correct-continue,casual_confirmation,
-practice-r-001,Practica la letra R.,Practica la letra erre.,pronunciation,instruction,Separate synthesis text demonstrates a pronunciation aid
-ready-next-001,Ya está. Vamos a lo siguiente.,,ready-next,transition,
+id,text
+welcome,Welcome to the audio experience.
+step-one,Open the app and choose your first option.
+step-two,"Great, you are ready for the next step."
+complete,Everything is set up and ready to go.

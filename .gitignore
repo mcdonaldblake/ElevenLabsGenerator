@@ -1,6 +1,9 @@
 node_modules/
 .pnpm-store/
 dist/
+.next/
+.vercel/
+*.tsbuildinfo
 coverage/
 playwright-report/
 test-results/
@@ -10,6 +13,9 @@ test-results/
 !.env.example
 .DS_Store
 
-# All generated audio, SQLite state, imports, and exports stay local.
-data/*
-!data/.gitkeep
+# Audio and imports live only in browser memory; never commit ad-hoc downloads.
+downloads/
+# Ignore any state left by pre-cloud versions of this repository.
+data/
+.vercel
+.env*

@@ -1,6 +1,6 @@
 {
-  "name": "frase-uno-voice-foundry",
-  "version": "0.1.0",
+  "name": "elevenlabs-generator",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
@@ -8,22 +8,32 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "dev": "concurrently --kill-others --names server,web --prefix-colors yellow,cyan \"pnpm --filter @voice-foundry/server dev\" \"pnpm --filter @voice-foundry/web dev\"",
-    "build": "pnpm --filter @voice-foundry/web build && pnpm --filter @voice-foundry/server build",
-    "start": "pnpm build && pnpm --filter @voice-foundry/server start",
-    "start:iphone": "LAN_ACCESS_ENABLED=true pnpm start",
-    "typecheck": "pnpm -r typecheck",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "pnpm typecheck && pnpm test && pnpm build",
-    "db:generate": "drizzle-kit generate",
-    "sample:large": "node scripts/generate-large-sample.mjs"
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "dependencies": {
+    "lucide-react": "1.31.0",
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "zod": "4.4.3"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "latest",
+    "@testing-library/react": "16.3.2",
     "@types/node": "latest",
-    "concurrently": "latest",
-    "drizzle-kit": "latest",
-    "typescript": "latest",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.1",
+    "jsdom": "latest",
+    "typescript": "6.0.3",
     "vitest": "latest"
   }
 }
